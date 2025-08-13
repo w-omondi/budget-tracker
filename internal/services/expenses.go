@@ -1,42 +1,52 @@
 package services
 
 import (
+	"time"
+
 	"github.com/w-omondi/budget-tracker.git/internal/models"
-	"gorm.io/gorm"
+	"github.com/w-omondi/budget-tracker.git/internal/repositories"
 )
 
-type ExpenseService struct {
-	db gorm.DB // Assuming you're using GORM for database operations
+type ExpenseService interface {
+	CreateExpense(createExpenseDto *models.CreateExpenseDto) error
+	GetExpenseByID(id int) (*models.Expense, error)
+	GetAllExpenses() ([]models.Expense, error)
+	UpdateExpense(expense *models.Expense) error
+	DeleteExpense(id int) error
 }
 
-func (e *ExpenseService) CreateExpense(expense *models.Expense) error {
-	println("Creating expense:", expense)
-	return e.db.Create(expense).Error
+type expenseService struct {
+	repo repositories.ExpenseRepository
 }
 
-func (e *ExpenseService) GetExpenseByID(id int) (*models.Expense, error) {
-	println("Fetching expense with ID:", id)
-	// Simulate fetching from the database
-	return &models.Expense{ID: id, Amount: 100.0, Description: "Sample Expense", Date: "2023-10-01", Category: "Food"}, nil
+func NewExpenseService(expenseRepo repositories.ExpenseRepository) ExpenseService {
+	return &expenseService{
+		repo: expenseRepo,
+	}
 }
 
-func (e *ExpenseService) GetAllExpenses() ([]models.Expense, error) {
-	println("Fetching all expenses")
-	// Simulate fetching from the database
-	return []models.Expense{
-		{ID: 1, Amount: 100.0, Description: "Sample Expense 1", Date: "2023-10-01", Category: "Food"},
-		{ID: 2, Amount: 200.0, Description: "Sample Expense 2", Date: "2023-10-02", Category: "Transport"},
-	}, nil
+func (e *expenseService) CreateExpense(createExpenseDto *models.CreateExpenseDto) error {
+	expense := &models.Expense{
+		Amount:createExpenseDto.Amount,
+		Description: createExpenseDto.Description,
+		Date: time.Now(),
+		Category: createExpenseDto.CategoryId,
+	}
+	return e.repo.CreateExpense(expense)
 }
 
-func (e *ExpenseService) UpdateExpense(expense *models.Expense) error {
-	println("Updating expense:", expense)
-	// Simulate updating the database
-	return nil
+func (e *expenseService) GetExpenseByID(id int) (*models.Expense, error) {
+	return e.repo.GetExpenseByID(id)
 }
 
-func (e *ExpenseService) DeleteExpense(id int) error {
-	println("Deleting expense with ID:", id)
-	// Simulate deleting from the database
-	return nil
+func (e *expenseService) GetAllExpenses() ([]models.Expense, error) {
+	return e.repo.GetAllExpenses()
+}
+
+func (e *expenseService) UpdateExpense(expense *models.Expense) error {
+	return e.repo.UpdateExpense(expense)
+}
+
+func (e *expenseService) DeleteExpense(id int) error {
+	return e.repo.DeleteExpense(id)
 }

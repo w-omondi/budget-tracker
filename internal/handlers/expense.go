@@ -6,11 +6,27 @@ import (
 	"github.com/w-omondi/budget-tracker.git/internal/services"
 )
 
-var expenseService *services.ExpenseService
+type ExpenseHandler interface {
+	CreateExpenseHandler(ctx *fiber.Ctx) error
+	GetExpenseByIDHandler(ctx *fiber.Ctx) error
+	GetAllExpensesHandler(ctx *fiber.Ctx) error
+	UpdateExpenseHandler(ctx *fiber.Ctx) error
+	DeleteExpenseHandler(ctx *fiber.Ctx) error
+}
 
-func CreateExpenseHandler(ctx *fiber.Ctx) error {
+type expenseHandler struct {
+	expenseService services.ExpenseService
+}
+
+func NewExpenseHandler(service services.ExpenseService) ExpenseHandler {
+	return &expenseHandler{
+		expenseService: service,
+	}
+}
+
+func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 	println("Handling creation of expense:")
-	expense := new(models.Expense)
+	expense := new(models.CreateExpenseDto)
 	if err := ctx.BodyParser(expense); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Failed to parse expense data",
@@ -31,7 +47,7 @@ func CreateExpenseHandler(ctx *fiber.Ctx) error {
 	}
 
 	println("Creating expense with amount:", expense.Amount, "and description:", expense.Description)
-	if err := expenseService.CreateExpense(expense); err != nil {
+	if err := h.expenseService.CreateExpense(expense); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create expense",
 		})
@@ -39,7 +55,7 @@ func CreateExpenseHandler(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(expense)
 }
 
-func GetExpenseByIDHandler(ctx *fiber.Ctx) error {
+func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -48,7 +64,7 @@ func GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 	}
 
 	println("Fetching expense with ID:", id)
-	expense, err := expenseService.GetExpenseByID(id)
+	expense, err := h.expenseService.GetExpenseByID(id)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch expense",
@@ -64,9 +80,9 @@ func GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 	return ctx.JSON(expense)
 }
 
-func GetAllExpensesHandler(ctx *fiber.Ctx) error {
+func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 	println("Fetching all expenses")
-	expenses, err := expenseService.GetAllExpenses()
+	expenses, err := h.expenseService.GetAllExpenses()
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch expenses",
@@ -76,7 +92,7 @@ func GetAllExpensesHandler(ctx *fiber.Ctx) error {
 	return ctx.JSON(expenses)
 }
 
-func UpdateExpenseHandler(ctx *fiber.Ctx) error {
+func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -93,7 +109,7 @@ func UpdateExpenseHandler(ctx *fiber.Ctx) error {
 
 	expense.ID = id
 	println("Updating expense with ID:", id)
-	if err := expenseService.UpdateExpense(expense); err != nil {
+	if err := h.expenseService.UpdateExpense(expense); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update expense",
 		})
@@ -102,7 +118,7 @@ func UpdateExpenseHandler(ctx *fiber.Ctx) error {
 	return ctx.JSON(expense)
 }
 
-func DeleteExpenseHandler(ctx *fiber.Ctx) error {
+func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -111,7 +127,7 @@ func DeleteExpenseHandler(ctx *fiber.Ctx) error {
 	}
 
 	println("Deleting expense with ID:", id)
-	if err := expenseService.DeleteExpense(id); err != nil {
+	if err := h.expenseService.DeleteExpense(id); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete expense",
 		})

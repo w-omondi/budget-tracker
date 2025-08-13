@@ -8,12 +8,11 @@ import (
 )
 
 func RunApp() {
+	db := InitializeDatabase()
+
 	app := fiber.New()
 
-	routes.DefaultRoutes(app)
-
-	expenseRoutes := app.Group("/expenses")
-	routes.ExpenseRoutes(expenseRoutes)
+	routes.SetupRoutes(app,db)
 
 	log.Fatal(app.Listen(":3000"))
 }
