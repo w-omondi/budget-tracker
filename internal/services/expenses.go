@@ -27,10 +27,10 @@ func NewExpenseService(expenseRepo repositories.ExpenseRepository) ExpenseServic
 
 func (e *expenseService) CreateExpense(createExpenseDto *models.CreateExpenseDto) error {
 	expense := &models.Expense{
-		Amount:createExpenseDto.Amount,
+		Amount:      createExpenseDto.Amount,
 		Description: createExpenseDto.Description,
-		Date: time.Now(),
-		Category: createExpenseDto.CategoryId,
+		Date:        time.Now(),
+		CategoryId:  createExpenseDto.CategoryId,
 	}
 	return e.repo.CreateExpense(expense)
 }

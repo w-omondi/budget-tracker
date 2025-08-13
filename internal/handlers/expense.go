@@ -107,7 +107,7 @@ func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
 		})
 	}
 
-	expense.ID = id
+	expense.ID = uint(id)
 	println("Updating expense with ID:", id)
 	if err := h.expenseService.UpdateExpense(expense); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
