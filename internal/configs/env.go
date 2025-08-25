@@ -12,7 +12,7 @@ func LoadEnv() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	println("Environment variables loaded successfully")
+	log.Println("Environment variables loaded successfully")
 }
 
 func CheckEnvs(variables ...string) {
@@ -21,7 +21,7 @@ func CheckEnvs(variables ...string) {
 			log.Fatalf("Environment variable %s is not set", variable)
 		}
 	}
-	println("All required environment variables are set")
+	log.Println("All required environment variables are set")
 }
 
 func GetEnv(key string) string {
