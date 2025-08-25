@@ -8,7 +8,7 @@ import (
 type ExpenseCategoryRepository interface {
 	CreateCategory(category *models.ExpenseCategory) error
 	GetCategoryByID(id int) (*models.ExpenseCategory, error)
-	GetAllCategories() ([]models.ExpenseCategory, error)
+	GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error)
 	UpdateCategory(category *models.ExpenseCategory) error
 	DeleteCategory(id int) error
 }
@@ -33,14 +33,20 @@ func (r *expenseCategoryRepository) GetCategoryByID(id int) (*models.ExpenseCate
 	return &category, nil
 }
 
+func (r *expenseCategoryRepository) GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory,int64, error) {
+	var categories []*models.ExpenseCategory
+	var total int64
+	offset := (page - 1) * pageSize
 
-
-func (r *expenseCategoryRepository) GetAllCategories() ([]models.ExpenseCategory, error) {
-	var categories []models.ExpenseCategory
-	if err := r.db.Find(&categories).Error; err != nil {
-		return nil, err
+	if err := r.db.Find(&categories).Offset(offset).Limit(pageSize).Error; err != nil {
+		return nil, 0, err
 	}
-	return categories, nil
+
+	if err := r.db.Model(&models.ExpenseCategory{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return categories, total, nil
 }
 
 func (r *expenseCategoryRepository) UpdateCategory(category *models.ExpenseCategory) error {

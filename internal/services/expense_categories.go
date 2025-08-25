@@ -1,0 +1,52 @@
+package services
+
+import (
+	"github.com/w-omondi/budget-tracker.git/internal/models"
+	"github.com/w-omondi/budget-tracker.git/internal/repositories"
+)
+
+type ExpenseCategoryService interface {
+	CreateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error
+	GetCategoryByID(id int) (*models.ExpenseCategory, error)
+	GetAllCategories(pageSize, page int) ([]*models.ExpenseCategory, int64, error)
+	DeleteCategory(id int) error
+	UpdateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error
+}
+
+type expenseCategoryService struct {
+	repo repositories.ExpenseCategoryRepository
+}
+
+func NewExpenseCategoryService(_repo repositories.ExpenseCategoryRepository) ExpenseCategoryService {
+	return &expenseCategoryService{
+		repo: _repo,
+	}
+}
+
+func (s *expenseCategoryService) CreateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error {
+	expenseCategory := &models.ExpenseCategory{
+		Name:        createCategoryDto.Name,
+		Description: createCategoryDto.Description,
+	}
+	return s.repo.CreateCategory(expenseCategory)
+}
+
+func (s *expenseCategoryService) GetCategoryByID(id int) (*models.ExpenseCategory, error) {
+	return s.repo.GetCategoryByID(id)
+}
+
+func (s *expenseCategoryService) GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error) {
+	return s.repo.GetAllCategories(page, pageSize)
+}
+
+func (s *expenseCategoryService) UpdateCategory(updateCategoryDto *models.CreateExpenseCategoryDto) error {
+	expenseCategory := &models.ExpenseCategory{
+		Name:        updateCategoryDto.Name,
+		Description: updateCategoryDto.Description,
+	}
+	return s.repo.UpdateCategory(expenseCategory)
+}
+
+func (s *expenseCategoryService) DeleteCategory(id int) error {
+	return s.repo.DeleteCategory(id)
+}
