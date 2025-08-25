@@ -9,6 +9,7 @@ type ExpenseRepository interface {
 	CreateExpense(expense *models.Expense) error
 	GetExpenseByID(id int) (*models.Expense, error)
 	GetAllExpenses() ([]models.Expense, error)
+	GetPaginatedExpenses(page, pageSize int) ([]*models.Expense, int64, error)
 	UpdateExpense(expense *models.Expense) error
 	DeleteExpense(id int) error
 }
@@ -41,6 +42,23 @@ func (r *expenseRepository) GetAllExpenses() ([]models.Expense, error) {
 	return expenses, nil
 }
 
+func (r *expenseRepository) GetPaginatedExpenses(page, pageSize int) ([]*models.Expense, int64, error) {
+	var expenses []*models.Expense
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	if err := r.db.Find(&expenses).Offset(offset).Limit(pageSize).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if err := r.db.Model(&models.Expense{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return expenses, total, nil
+}
+
 func (r *expenseRepository) UpdateExpense(expense *models.Expense) error {
 	return r.db.Save(expense).Error
 }
@@ -52,4 +70,3 @@ func (r *expenseRepository) DeleteExpense(id int) error {
 	}
 	return r.db.Delete(&expense).Error
 }
-

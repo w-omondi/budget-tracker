@@ -10,7 +10,7 @@ import (
 type ExpenseService interface {
 	CreateExpense(createExpenseDto *models.CreateExpenseDto) error
 	GetExpenseByID(id int) (*models.Expense, error)
-	GetAllExpenses() ([]models.Expense, error)
+	GetAllExpenses(queryOptions *models.QueryOptions) ([]*models.Expense, int64, error)
 	UpdateExpense(expense *models.Expense) error
 	DeleteExpense(id int) error
 }
@@ -39,8 +39,8 @@ func (e *expenseService) GetExpenseByID(id int) (*models.Expense, error) {
 	return e.repo.GetExpenseByID(id)
 }
 
-func (e *expenseService) GetAllExpenses() ([]models.Expense, error) {
-	return e.repo.GetAllExpenses()
+func (e *expenseService) GetAllExpenses(queryOptions *models.QueryOptions) ([]*models.Expense, int64, error) {
+	return e.repo.GetPaginatedExpenses(queryOptions.Page, queryOptions.PageSize)
 }
 
 func (e *expenseService) UpdateExpense(expense *models.Expense) error {

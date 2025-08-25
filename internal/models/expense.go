@@ -1,13 +1,18 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Expense struct {
+	*gorm.Model
 	ID          uint      `json:"id"`
 	Amount      float64   `json:"amount"`
-	Description string   `json:"description"`
+	Description string    `json:"description"`
 	Date        time.Time `json:"date"`
-	CategoryId    uint    `json:"category"`
+	CategoryId  uint      `json:"category"`
 }
 
 type CreateExpenseDto struct {

@@ -10,6 +10,8 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 		return ctx.SendString("Welcome to the Budget Tracker API!")
 	})
 
-	expenseRoutes := app.Group("/expenses")
+	api := app.Group("/api")
+
+	expenseRoutes := api.Group("/expenses")
 	ExpenseRoutes(expenseRoutes, db)
 }

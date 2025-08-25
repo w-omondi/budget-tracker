@@ -12,7 +12,14 @@ func RunApp() {
 
 	app := fiber.New()
 
-	routes.SetupRoutes(app,db)
+	app.Use(func(c *fiber.Ctx) error {
+		c.Set("Access-Control-Allow-Origin", "*") 
+		c.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		return c.Next()
+	})
 
-	log.Fatal(app.Listen(":3000"))
+	routes.SetupRoutes(app, db)
+
+	log.Fatal(app.Listen(":3001"))
 }

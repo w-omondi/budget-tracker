@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"github.com/w-omondi/budget-tracker.git/internal/services"
+	"github.com/w-omondi/budget-tracker.git/internal/utils"
 )
 
 type ExpenseHandler interface {
@@ -52,6 +53,7 @@ func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 			"error": "Failed to create expense",
 		})
 	}
+	
 	return ctx.Status(fiber.StatusCreated).JSON(expense)
 }
 
@@ -82,14 +84,23 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 
 func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 	println("Fetching all expenses")
-	expenses, err := h.expenseService.GetAllExpenses()
+	queryOptions := &models.QueryOptions{
+		Query:    ctx.Query("query", ""),
+		Page:     ctx.QueryInt("page", 1),
+		PageSize: ctx.QueryInt("page_size", 10),
+	}
+
+	expenses, count, err := h.expenseService.GetAllExpenses(queryOptions)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch expenses",
 		})
 	}
 
-	return ctx.JSON(expenses)
+	apiRepose := utils.NewApiResponse[*models.Expense]()
+	response := apiRepose.SendPaginatedResponse(queryOptions.Page, queryOptions.PageSize, int(count), expenses)
+
+	return ctx.JSON(response)
 }
 
 func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
