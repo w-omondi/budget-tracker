@@ -2,8 +2,8 @@ package configs
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -25,15 +25,16 @@ func InitializeDatabase() *gorm.DB {
 		GetEnv("DB_NAME"),
 		GetEnv("DB_PORT"),
 	)
-	
+
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		panic("failed to connect to database")
 	}
 
-	if err := db.AutoMigrate(&models.Expense{}); err != nil {
-		panic("failed to migrate database")
+	newMigrationManager := NewMigrationManager(db)
+	if err := newMigrationManager.Run(); err != nil {
+		log.Fatal("Migration failed", "error", err)
 	}
 
 	return db

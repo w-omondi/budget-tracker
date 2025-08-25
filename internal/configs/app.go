@@ -4,22 +4,18 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/w-omondi/budget-tracker.git/internal/middlewares"
 	"github.com/w-omondi/budget-tracker.git/internal/routes"
 )
 
 func RunApp() {
 	db := InitializeDatabase()
-
+	
 	app := fiber.New()
+	middlewares.SetupCors(app)
 
-	app.Use(func(c *fiber.Ctx) error {
-		c.Set("Access-Control-Allow-Origin", "*") 
-		c.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		return c.Next()
-	})
-
-	routes.SetupRoutes(app, db)
+	appRouter := routes.NewAppRouter(app, db)
+	appRouter.CreateRouter()
 
 	log.Fatal(app.Listen(":3001"))
 }

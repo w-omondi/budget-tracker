@@ -9,7 +9,6 @@ import (
 )
 
 func ExpenseRoutes(route fiber.Router, db *gorm.DB) {
-	
 	expenseRepository := repositories.NewExpenseRepository(db)
 	expenseService := services.NewExpenseService(expenseRepository)
 	handler := handlers.NewExpenseHandler(expenseService)
@@ -19,4 +18,16 @@ func ExpenseRoutes(route fiber.Router, db *gorm.DB) {
 	route.Get("/", handler.GetAllExpensesHandler)
 	route.Put("/:id", handler.UpdateExpenseHandler)
 	route.Delete("/:id", handler.DeleteExpenseHandler)
+}
+
+func ExpenseCategoriesRoute(route fiber.Router, db *gorm.DB) {
+	expenseCategoriesRepo := repositories.NewExpenseCategoryRepository(db)
+	expenseCategoriesService := services.NewExpenseCategoryService(expenseCategoriesRepo)
+	handler := handlers.NewExpenseCategoriesHandler(expenseCategoriesService)
+
+	route.Post("/", handler.CreateExpenseCategoriesHandler)
+	route.Get("/:id", handler.GetExpenseCategoryByIDHandler)
+	route.Get("/", handler.GetAllExpenseCategoriesHandler)
+	route.Put("/:id", handler.UpdateExpenseCategoriesHandler)
+	route.Delete("/:id", handler.DeleteExpenseCategoriesHandler)
 }

@@ -8,9 +8,9 @@ import (
 type ExpenseCategoryService interface {
 	CreateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error
 	GetCategoryByID(id int) (*models.ExpenseCategory, error)
-	GetAllCategories(pageSize, page int) ([]*models.ExpenseCategory, int64, error)
+	GetAllCategories(queryOptions *models.QueryOptions) ([]*models.ExpenseCategory, int64, error)
 	DeleteCategory(id int) error
-	UpdateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error
+	UpdateCategory(category *models.ExpenseCategory) error
 }
 
 type expenseCategoryService struct {
@@ -35,12 +35,16 @@ func (s *expenseCategoryService) GetCategoryByID(id int) (*models.ExpenseCategor
 	return s.repo.GetCategoryByID(id)
 }
 
-func (s *expenseCategoryService) GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error) {
+func (s *expenseCategoryService) GetAllCategories(queryOptions *models.QueryOptions) ([]*models.ExpenseCategory, int64, error) {
+	//Query options logic
+	page := queryOptions.Page
+	pageSize := queryOptions.PageSize
 	return s.repo.GetAllCategories(page, pageSize)
 }
 
-func (s *expenseCategoryService) UpdateCategory(updateCategoryDto *models.CreateExpenseCategoryDto) error {
+func (s *expenseCategoryService) UpdateCategory(updateCategoryDto *models.ExpenseCategory) error {
 	expenseCategory := &models.ExpenseCategory{
+		ID:          updateCategoryDto.ID,
 		Name:        updateCategoryDto.Name,
 		Description: updateCategoryDto.Description,
 	}

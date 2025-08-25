@@ -5,13 +5,35 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(app *fiber.App, db *gorm.DB) {
+type AppRouter interface {
+	CreateRouter()
+}
+
+type appRouter struct {
+	app *fiber.App
+	db  *gorm.DB
+}
+
+func NewAppRouter(app *fiber.App, db *gorm.DB) AppRouter {
+	return &appRouter{
+		app: app,
+		db:  db,
+	}
+}
+
+func (r *appRouter) CreateRouter() {
+	app := r.app
+	db := r.db
+
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("Welcome to the Budget Tracker API!")
 	})
 
-	api := app.Group("/api")
+	api := r.app.Group("/api")
 
 	expenseRoutes := api.Group("/expenses")
 	ExpenseRoutes(expenseRoutes, db)
+
+	expenseCategoriesRoutes := api.Group("/expense-categories")
+	ExpenseCategoriesRoute(expenseCategoriesRoutes, db)
 }
