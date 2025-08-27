@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"github.com/w-omondi/budget-tracker.git/internal/repositories"
 )
@@ -26,11 +24,11 @@ func NewExpenseService(expenseRepo repositories.ExpenseRepository) ExpenseServic
 }
 
 func (e *expenseService) CreateExpense(createExpenseDto *models.CreateExpenseDto) error {
+	category := &models.ExpenseCategory{ID: createExpenseDto.CategoryId}
 	expense := &models.Expense{
 		Amount:      createExpenseDto.Amount,
 		Description: createExpenseDto.Description,
-		Date:        time.Now(),
-		CategoryId:  createExpenseDto.CategoryId,
+		Category:    category,
 	}
 	return e.repo.CreateExpense(expense)
 }

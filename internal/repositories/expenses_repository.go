@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"log"
+
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"gorm.io/gorm"
 )
@@ -48,13 +50,15 @@ func (r *expenseRepository) GetPaginatedExpenses(page, pageSize int) ([]*models.
 
 	offset := (page - 1) * pageSize
 
-	if err := r.db.Find(&expenses).Offset(offset).Limit(pageSize).Error; err != nil {
+	if err := r.db.Preload("Category").Offset(offset).Limit(pageSize).Find(&expenses).Error; err != nil {
 		return nil, 0, err
 	}
 
 	if err := r.db.Model(&models.Expense{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
+
+	log.Println(expenses)
 
 	return expenses, total, nil
 }
