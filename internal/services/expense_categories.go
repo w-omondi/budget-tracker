@@ -44,7 +44,6 @@ func (s *expenseCategoryService) GetAllCategories(queryOptions *models.QueryOpti
 
 func (s *expenseCategoryService) UpdateCategory(updateCategoryDto *models.ExpenseCategory) error {
 	expenseCategory := &models.ExpenseCategory{
-		ID:          updateCategoryDto.ID,
 		Name:        updateCategoryDto.Name,
 		Description: updateCategoryDto.Description,
 	}
