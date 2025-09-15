@@ -10,7 +10,7 @@ type ExpenseCategoryRepository interface {
 	GetCategoryByID(id int) (*models.ExpenseCategory, error)
 	GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error)
 	UpdateCategory(category *models.ExpenseCategory) error
-	DeleteCategory(id int) error
+	DeleteCategory(id uint) error
 }
 
 type expenseCategoryRepository struct {
@@ -33,7 +33,7 @@ func (r *expenseCategoryRepository) GetCategoryByID(id int) (*models.ExpenseCate
 	return &category, nil
 }
 
-func (r *expenseCategoryRepository) GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory,int64, error) {
+func (r *expenseCategoryRepository) GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error) {
 	var categories []*models.ExpenseCategory
 	var total int64
 	offset := (page - 1) * pageSize
@@ -50,12 +50,14 @@ func (r *expenseCategoryRepository) GetAllCategories(page, pageSize int) ([]*mod
 }
 
 func (r *expenseCategoryRepository) UpdateCategory(category *models.ExpenseCategory) error {
-	return r.db.Save(category).Error
+	return r.db.Model(&models.ExpenseCategory{}).Where("id=?", category.ID).Updates(category).Error
 }
 
-func (r *expenseCategoryRepository) DeleteCategory(id int) error {
-	var category models.ExpenseCategory
-	if err := r.db.First(&category, id).Error; err != nil {
+func (r *expenseCategoryRepository) DeleteCategory(id uint) error {
+	category := &models.ExpenseCategory{
+		ID: id,
+	}
+	if err := r.db.First(category).Error; err != nil {
 		return err
 	}
 	return r.db.Delete(&category).Error

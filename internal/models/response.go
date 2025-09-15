@@ -6,6 +6,11 @@ type NormalResponse struct {
 	Data    any    `json:"data"`
 }
 
+type NoContentResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
 type PaginatedResponse[T any] struct {
 	Success    bool   `json:"success"`
 	Message    string `json:"message"`

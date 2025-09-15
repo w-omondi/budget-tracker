@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"github.com/w-omondi/budget-tracker.git/internal/services"
@@ -46,7 +48,10 @@ func (h *expenseCategoriesHandler) CreateExpenseCategoriesHandler(ctx *fiber.Ctx
 		})
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(expenseCategory)
+	apiRepose := utils.NewApiResponse[any]()
+	response := apiRepose.SendNoContedResponse()
+
+	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx) error {
@@ -71,7 +76,10 @@ func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx)
 		})
 	}
 
-	return ctx.JSON(expenseCategory)
+	res := utils.NewApiResponse[models.ExpenseCategory]()
+	response := res.SendSingleResponse(expenseCategory)
+
+	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx) error {
@@ -111,14 +119,18 @@ func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx
 	}
 
 	expenseCategory.ID = uint(id)
-	println("Updating expenseCategory with ID:", id)
+	log.Println("Updating expenseCategory with ID:", id)
+	log.Printf("New Data: %+v", expenseCategory)
 	if err := h.expenseCategoriesService.UpdateCategory(expenseCategory); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update expenseCategory",
 		})
 	}
 
-	return ctx.JSON(expenseCategory)
+	apiRepose := utils.NewApiResponse[any]()
+	response := apiRepose.SendNoContedResponse()
+
+	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) DeleteExpenseCategoriesHandler(ctx *fiber.Ctx) error {
@@ -129,12 +141,17 @@ func (h *expenseCategoriesHandler) DeleteExpenseCategoriesHandler(ctx *fiber.Ctx
 		})
 	}
 
-	println("Deleting expenseCategory with ID:", id)
-	if err := h.expenseCategoriesService.DeleteCategory(id); err != nil {
+	_id := uint(id)
+
+	println("Deleting expenseCategory with ID:", _id)
+	if err := h.expenseCategoriesService.DeleteCategory(_id); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete expenseCategory",
 		})
 	}
 
-	return ctx.SendStatus(fiber.StatusNoContent)
+	apiRepose := utils.NewApiResponse[any]()
+	response := apiRepose.SendNoContedResponse()
+
+	return ctx.JSON(response)
 }
