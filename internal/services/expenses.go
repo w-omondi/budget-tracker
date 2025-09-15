@@ -9,7 +9,7 @@ type ExpenseService interface {
 	CreateExpense(createExpenseDto *models.CreateExpenseDto) error
 	GetExpenseByID(id int) (*models.Expense, error)
 	GetAllExpenses(queryOptions *models.QueryOptions) ([]*models.Expense, int64, error)
-	UpdateExpense(expense *models.Expense) error
+	UpdateExpense(id int, expenseDto *models.CreateExpenseDto) error
 	DeleteExpense(id int) error
 }
 
@@ -41,7 +41,13 @@ func (e *expenseService) GetAllExpenses(queryOptions *models.QueryOptions) ([]*m
 	return e.repo.GetPaginatedExpenses(queryOptions.Page, queryOptions.PageSize)
 }
 
-func (e *expenseService) UpdateExpense(expense *models.Expense) error {
+func (e *expenseService) UpdateExpense(id int, expenseDto *models.CreateExpenseDto) error {
+	expense := &models.Expense{
+		ID:          uint(id),
+		Amount:      expenseDto.Amount,
+		Description: expenseDto.Description,
+		CategoryID:  expenseDto.CategoryId,
+	}
 	return e.repo.UpdateExpense(expense)
 }
 

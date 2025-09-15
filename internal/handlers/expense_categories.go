@@ -104,30 +104,28 @@ func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx
 }
 
 func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx) error {
+	apiRepose := utils.NewApiResponse[any]()
+
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expenseCategory ID",
-		})
+		response := apiRepose.SendErrorResponse("Invalid expenseCategory ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	expenseCategory := new(models.ExpenseCategory)
 	if err := ctx.BodyParser(expenseCategory); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse expenseCategory data",
-		})
+		response := apiRepose.SendErrorResponse("Failed to parse expenseCategory data", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	expenseCategory.ID = uint(id)
 	log.Println("Updating expenseCategory with ID:", id)
 	log.Printf("New Data: %+v", expenseCategory)
 	if err := h.expenseCategoriesService.UpdateCategory(expenseCategory); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to update expenseCategory",
-		})
+		response := apiRepose.SendErrorResponse("Failed to update expenseCategory", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[any]()
 	response := apiRepose.SendNoContedResponse()
 
 	return ctx.JSON(response)

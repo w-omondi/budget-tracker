@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"github.com/w-omondi/budget-tracker.git/internal/services"
@@ -53,7 +55,7 @@ func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 			"error": "Failed to create expense",
 		})
 	}
-	
+
 	return ctx.Status(fiber.StatusCreated).JSON(expense)
 }
 
@@ -104,29 +106,30 @@ func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 }
 
 func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
+	apiRepose := utils.NewApiResponse[any]()
+	log.Println("Updating an expense")
+
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expense ID",
-		})
+		response := apiRepose.SendErrorResponse("Invalid expense ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	expense := new(models.Expense)
+	expense := new(models.CreateExpenseDto)
 	if err := ctx.BodyParser(expense); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse expense data",
-		})
+		response := apiRepose.SendErrorResponse("Failed to parse expense data", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	expense.ID = uint(id)
-	println("Updating expense with ID:", id)
-	if err := h.expenseService.UpdateExpense(expense); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to update expense",
-		})
+	log.Printf("Updating expense with ID: %+v", id)
+	log.Printf("New Data: %+v", expense)
+	if err := h.expenseService.UpdateExpense(id, expense); err != nil {
+		response := apiRepose.SendErrorResponse("Failed to update expense", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	return ctx.JSON(expense)
+	response := apiRepose.SendNoContedResponse()
+	return ctx.JSON(response)
 }
 
 func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
@@ -144,5 +147,8 @@ func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.SendStatus(fiber.StatusNoContent)
+	apiRepose := utils.NewApiResponse[any]()
+	response := apiRepose.SendNoContedResponse()
+
+	return ctx.JSON(response)
 }

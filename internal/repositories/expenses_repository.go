@@ -64,7 +64,7 @@ func (r *expenseRepository) GetPaginatedExpenses(page, pageSize int) ([]*models.
 }
 
 func (r *expenseRepository) UpdateExpense(expense *models.Expense) error {
-	return r.db.Save(expense).Error
+	return r.db.Model(&models.Expense{}).Where("id=?", expense.ID).Updates(expense).Error
 }
 
 func (r *expenseRepository) DeleteExpense(id int) error {
