@@ -68,7 +68,8 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNotFound).JSON(response)
 	}
 
-	return ctx.JSON(expense)
+	response:= h.responseUtil.SendSingleResponse(expense)
+	return ctx.JSON(response)
 }
 
 func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
