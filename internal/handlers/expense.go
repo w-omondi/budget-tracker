@@ -28,34 +28,30 @@ func NewExpenseHandler(service services.ExpenseService) ExpenseHandler {
 }
 
 func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
-	println("Handling creation of expense:")
+	log.Println("Handling creation of expense:")
+	apiRepose := utils.NewApiResponse[any]()
+
 	expense := new(models.CreateExpenseDto)
 	if err := ctx.BodyParser(expense); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse expense data",
-		})
+		response := apiRepose.SendErrorResponse("Failed to parse data, invalid type", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	if expense.Amount <= 0 {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Expense amount must be greater than zero",
-		})
+	// validationErrors := utils.ValidateStruct(expense)
+	// if validationErrors != nil {
+	// 	log.Printf("Validation errors: %+v", validationErrors)
+	// 	validationErrorStrings := strings.Join(validationErrors, "; ")
+	// 	response := apiRepose.SendErrorResponse("Validation failed: "+validationErrorStrings, nil)
+	// 	return ctx.Status(fiber.StatusBadRequest).JSON(response)
+	// }
 
-	}
-
-	if expense.Description == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Expense description cannot be empty",
-		})
-	}
-
-	println("Creating expense with amount:", expense.Amount, "and description:", expense.Description)
+	log.Println("Creating expense with amount:", expense.Amount, "and description:", expense.Description)
 	if err := h.expenseService.CreateExpense(expense); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create expense",
-		})
+		response := apiRepose.SendErrorResponse("Failed to create expense", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
+	log.Println("Expense created successfully")
 	return ctx.Status(fiber.StatusCreated).JSON(expense)
 }
 
@@ -67,7 +63,7 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 		})
 	}
 
-	println("Fetching expense with ID:", id)
+	log.Println("Fetching expense with ID:", id)
 	expense, err := h.expenseService.GetExpenseByID(id)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -85,7 +81,7 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 }
 
 func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
-	println("Fetching all expenses")
+	log.Println("Fetching all expenses")
 	queryOptions := &models.QueryOptions{
 		Query:    ctx.Query("query", ""),
 		Page:     ctx.QueryInt("page", 1),
@@ -140,7 +136,7 @@ func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
 		})
 	}
 
-	println("Deleting expense with ID:", id)
+	log.Println("Deleting expense with ID:", id)
 	if err := h.expenseService.DeleteExpense(id); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete expense",

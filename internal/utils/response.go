@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 )
@@ -35,7 +35,7 @@ func (r *apiResponse[T]) SendSingleResponse(data any) *models.NormalResponse {
 }
 
 func (r *apiResponse[T]) SendPaginatedResponse(page, pageSize, totalItems int, items []T) *models.PaginatedResponse[T] {
-	fmt.Printf("Response size: Page: %v, PageSize: %v, Data Sent: %v, TotalItems: %v", page, pageSize, len(items), totalItems)
+	log.Printf("Response size: Page: %v, PageSize: %v, Data Sent: %v, TotalItems: %v", page, pageSize, len(items), totalItems)
 	return &models.PaginatedResponse[T]{
 		Success:    true,
 		Message:    "Data retrieved successfully",
@@ -48,6 +48,7 @@ func (r *apiResponse[T]) SendPaginatedResponse(page, pageSize, totalItems int, i
 }
 
 func (r *apiResponse[T]) SendErrorResponse(message string, err error) *models.ErrorResponse {
+	log.Printf("Error: %s, Details: %v", message, err)
 	return &models.ErrorResponse{
 		Success: false,
 		Message: message,

@@ -28,7 +28,7 @@ func NewExpenseCategoriesHandler(service services.ExpenseCategoryService) Expens
 }
 
 func (h *expenseCategoriesHandler) CreateExpenseCategoriesHandler(ctx *fiber.Ctx) error {
-	println("Handling creation of expenseCategory:")
+	log.Println("Handling creation of expenseCategory:")
 	expenseCategory := new(models.CreateExpenseCategoryDto)
 	if err := ctx.BodyParser(expenseCategory); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -62,7 +62,7 @@ func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx)
 		})
 	}
 
-	println("Fetching expenseCategory with ID:", id)
+	log.Println("Fetching expenseCategory with ID:", id)
 	expenseCategory, err := h.expenseCategoriesService.GetCategoryByID(id)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -83,7 +83,7 @@ func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx)
 }
 
 func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx) error {
-	println("Fetching all expenseCategories")
+	log.Println("Fetching all expenseCategories")
 	queryOptions := &models.QueryOptions{
 		Query:    ctx.Query("query", ""),
 		Page:     ctx.QueryInt("page", 1),
@@ -141,7 +141,7 @@ func (h *expenseCategoriesHandler) DeleteExpenseCategoriesHandler(ctx *fiber.Ctx
 
 	_id := uint(id)
 
-	println("Deleting expenseCategory with ID:", _id)
+	log.Println("Deleting expenseCategory with ID:", _id)
 	if err := h.expenseCategoriesService.DeleteCategory(_id); err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to delete expenseCategory",
