@@ -20,7 +20,7 @@ type Expense struct {
 }
 
 type CreateExpenseDto struct {
-	Amount      float64 `json:"amount" validate:"require,min=1"`
+	Amount      float64 `json:"amount" validate:"required,min=1"`
 	Description string  `json:"description" validate:"required"`
 	CategoryId  uint    `json:"category_id" validate:"required"`
 }

@@ -48,10 +48,12 @@ func (r *apiResponse[T]) SendPaginatedResponse(page, pageSize, totalItems int, i
 }
 
 func (r *apiResponse[T]) SendErrorResponse(message string, err error) *models.ErrorResponse {
-	log.Printf("Error: %s, Details: %v", message, err)
+	log.Printf("Error: %s", message)
+	if err != nil {
+		log.Printf("Details: %v", err.Error())
+	}
 	return &models.ErrorResponse{
 		Success: false,
 		Message: message,
-		Error:   err.Error(),
 	}
 }

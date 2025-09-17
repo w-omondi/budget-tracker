@@ -1,18 +1,27 @@
 package utils
 
-import "github.com/go-playground/validator/v10"
+import (
+	"errors"
+	"strings"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+)
 
 var validate = validator.New()
 
-func ValidateStruct(_struct interface{}) []string {
-	var errors []string
+func ParseAndValidateData(ctx *fiber.Ctx, data any) error {
+	if err := ctx.BodyParser(data); err != nil {
+		return err
+	}
 
-	err := validate.Struct(_struct)
+	var _errors []string
+	err := validate.Struct(data)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			errors = append(errors, err.Field())
+			_errors = append(_errors, err.Field())
 		}
-		return errors
+		return errors.New("Invalid: " + strings.Join(_errors, ", "))
 	}
 
 	return nil

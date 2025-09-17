@@ -19,71 +19,60 @@ type ExpenseCategoriesHandler interface {
 
 type expenseCategoriesHandler struct {
 	expenseCategoriesService services.ExpenseCategoryService
+	responseUtil             utils.ApiResponse[*models.ExpenseCategory]
 }
 
 func NewExpenseCategoriesHandler(service services.ExpenseCategoryService) ExpenseCategoriesHandler {
 	return &expenseCategoriesHandler{
 		expenseCategoriesService: service,
+		responseUtil:             utils.NewApiResponse[*models.ExpenseCategory](),
 	}
 }
 
 func (h *expenseCategoriesHandler) CreateExpenseCategoriesHandler(ctx *fiber.Ctx) error {
 	log.Println("Handling creation of expenseCategory:")
-	expenseCategory := new(models.CreateExpenseCategoryDto)
-	if err := ctx.BodyParser(expenseCategory); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse expenseCategory data",
-		})
-	}
 
-	if expenseCategory.Name == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Expense category name cannot be empty",
-		})
+	expenseCategory := new(models.CreateExpenseCategoryDto)
+	if err := utils.ParseAndValidateData(ctx, expenseCategory); err != nil {
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	if err := h.expenseCategoriesService.CreateCategory(expenseCategory); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create expenseCategory",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to create expenseCategory", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[any]()
-	response := apiRepose.SendNoContedResponse()
-
+	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx) error {
+
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expenseCategory ID",
-		})
+		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	log.Println("Fetching expenseCategory with ID:", id)
 	expenseCategory, err := h.expenseCategoriesService.GetCategoryByID(id)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch expenseCategory",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to fetch expenseCategory", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
 	if expenseCategory == nil {
-		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Expense Category not found",
-		})
+		response := h.responseUtil.SendErrorResponse("ExpenseCategory not found", nil)
+		return ctx.Status(fiber.StatusNotFound).JSON(response)
 	}
 
-	res := utils.NewApiResponse[models.ExpenseCategory]()
-	response := res.SendSingleResponse(expenseCategory)
-
+	response := h.responseUtil.SendSingleResponse(expenseCategory)
 	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx) error {
 	log.Println("Fetching all expenseCategories")
+
 	queryOptions := &models.QueryOptions{
 		Query:    ctx.Query("query", ""),
 		Page:     ctx.QueryInt("page", 1),
@@ -92,64 +81,53 @@ func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx
 
 	expenseCategories, count, err := h.expenseCategoriesService.GetAllCategories(queryOptions)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch expenseCategories",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to fetch expenseCategories", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[*models.ExpenseCategory]()
-	response := apiRepose.SendPaginatedResponse(queryOptions.Page, queryOptions.PageSize, int(count), expenseCategories)
-
+	response := h.responseUtil.SendPaginatedResponse(queryOptions.Page, queryOptions.PageSize, int(count), expenseCategories)
 	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx) error {
-	apiRepose := utils.NewApiResponse[any]()
+	log.Println("Updating an expenseCategory")
 
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		response := apiRepose.SendErrorResponse("Invalid expenseCategory ID", err)
+		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	expenseCategory := new(models.ExpenseCategory)
-	if err := ctx.BodyParser(expenseCategory); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to parse expenseCategory data", err)
+	if err := utils.ParseAndValidateData(ctx, expenseCategory); err != nil {
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	expenseCategory.ID = uint(id)
-	log.Println("Updating expenseCategory with ID:", id)
-	log.Printf("New Data: %+v", expenseCategory)
 	if err := h.expenseCategoriesService.UpdateCategory(expenseCategory); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to update expenseCategory", err)
+		response := h.responseUtil.SendErrorResponse("Failed to update expenseCategory", err)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	response := apiRepose.SendNoContedResponse()
-
+	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }
 
 func (h *expenseCategoriesHandler) DeleteExpenseCategoriesHandler(ctx *fiber.Ctx) error {
+	log.Println("Deleting an expenseCategory")
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expenseCategory ID",
-		})
+		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	_id := uint(id)
-
-	log.Println("Deleting expenseCategory with ID:", _id)
 	if err := h.expenseCategoriesService.DeleteCategory(_id); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to delete expenseCategory",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to delete expenseCategory", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[any]()
-	response := apiRepose.SendNoContedResponse()
-
+	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }

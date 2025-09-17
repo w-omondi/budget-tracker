@@ -19,35 +19,28 @@ type ExpenseHandler interface {
 
 type expenseHandler struct {
 	expenseService services.ExpenseService
+	responseUtil   utils.ApiResponse[*models.Expense]
 }
 
 func NewExpenseHandler(service services.ExpenseService) ExpenseHandler {
 	return &expenseHandler{
 		expenseService: service,
+		responseUtil:   utils.NewApiResponse[*models.Expense](),
 	}
 }
 
 func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 	log.Println("Handling creation of expense:")
-	apiRepose := utils.NewApiResponse[any]()
 
 	expense := new(models.CreateExpenseDto)
-	if err := ctx.BodyParser(expense); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to parse data, invalid type", err)
+	if err := utils.ParseAndValidateData(ctx, expense); err != nil {
+		response := h.responseUtil.SendErrorResponse(err.Error(), err)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	// validationErrors := utils.ValidateStruct(expense)
-	// if validationErrors != nil {
-	// 	log.Printf("Validation errors: %+v", validationErrors)
-	// 	validationErrorStrings := strings.Join(validationErrors, "; ")
-	// 	response := apiRepose.SendErrorResponse("Validation failed: "+validationErrorStrings, nil)
-	// 	return ctx.Status(fiber.StatusBadRequest).JSON(response)
-	// }
-
-	log.Println("Creating expense with amount:", expense.Amount, "and description:", expense.Description)
+	log.Printf("Creating expense with data: %+v", expense)
 	if err := h.expenseService.CreateExpense(expense); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to create expense", err)
+		response := h.responseUtil.SendErrorResponse("Failed to create expense", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
@@ -56,25 +49,23 @@ func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 }
 
 func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
+	log.Println("Fetching expense by ID")
+
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expense ID",
-		})
+		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	log.Println("Fetching expense with ID:", id)
 	expense, err := h.expenseService.GetExpenseByID(id)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch expense",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to fetch expense", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
 	if expense == nil {
-		return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "Expense not found",
-		})
+		response := h.responseUtil.SendErrorResponse("Expense not found", nil)
+		return ctx.Status(fiber.StatusNotFound).JSON(response)
 	}
 
 	return ctx.JSON(expense)
@@ -82,6 +73,7 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 
 func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 	log.Println("Fetching all expenses")
+
 	queryOptions := &models.QueryOptions{
 		Query:    ctx.Query("query", ""),
 		Page:     ctx.QueryInt("page", 1),
@@ -90,61 +82,52 @@ func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 
 	expenses, count, err := h.expenseService.GetAllExpenses(queryOptions)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch expenses",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to fetch expenses", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[*models.Expense]()
-	response := apiRepose.SendPaginatedResponse(queryOptions.Page, queryOptions.PageSize, int(count), expenses)
-
+	response := h.responseUtil.SendPaginatedResponse(queryOptions.Page, queryOptions.PageSize, int(count), expenses)
 	return ctx.JSON(response)
 }
 
 func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
-	apiRepose := utils.NewApiResponse[any]()
 	log.Println("Updating an expense")
 
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		response := apiRepose.SendErrorResponse("Invalid expense ID", err)
+		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
 	expense := new(models.CreateExpenseDto)
-	if err := ctx.BodyParser(expense); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to parse expense data", err)
+	if err := utils.ParseAndValidateData(ctx, expense); err != nil {
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	log.Printf("Updating expense with ID: %+v", id)
-	log.Printf("New Data: %+v", expense)
 	if err := h.expenseService.UpdateExpense(id, expense); err != nil {
-		response := apiRepose.SendErrorResponse("Failed to update expense", err)
+		response := h.responseUtil.SendErrorResponse("Failed to update expense", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	response := apiRepose.SendNoContedResponse()
+	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }
 
 func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
+	log.Println("Deleting an expense")
+
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid expense ID",
-		})
+		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	log.Println("Deleting expense with ID:", id)
 	if err := h.expenseService.DeleteExpense(id); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to delete expense",
-		})
+		response := h.responseUtil.SendErrorResponse("Failed to delete expense", err)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
 
-	apiRepose := utils.NewApiResponse[any]()
-	response := apiRepose.SendNoContedResponse()
-
+	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }
