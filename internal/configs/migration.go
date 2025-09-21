@@ -21,6 +21,7 @@ func (m *MigrationsManager) Run() error {
 	models := []any{
 		&models.Expense{},
 		&models.ExpenseCategory{},
+		&models.Revenue{},
 	}
 
 	if err := m.db.AutoMigrate(models...); err != nil {

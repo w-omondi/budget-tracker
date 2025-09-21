@@ -3,7 +3,6 @@ module github.com/w-omondi/budget-tracker.git
 go 1.24.5
 
 require (
-	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/joho/godotenv v1.5.1
@@ -37,5 +36,4 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 )
