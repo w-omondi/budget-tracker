@@ -29,7 +29,10 @@ func (r *appRouter) CreateRouter() {
 		return ctx.SendString("Welcome to the Budget Tracker API!")
 	})
 
-	api := r.app.Group("/api")
+	api := r.app.Group("/api/v1")
+
+	revenueRoutes := api.Group("/revenue-sources")
+	RevenueRoutes(revenueRoutes, db)
 
 	expenseRoutes := api.Group("/expenses")
 	ExpenseRoutes(expenseRoutes, db)
