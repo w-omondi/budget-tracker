@@ -39,7 +39,4 @@ func (r *appRouter) CreateRouter() {
 
 	expenseCategoriesRoutes := api.Group("/expense-categories")
 	ExpenseCategoriesRoute(expenseCategoriesRoutes, db)
-
-	revenueRoutes := api.Group("/revenue-sources")
-	RevenueRoutes(revenueRoutes, db)
 }
