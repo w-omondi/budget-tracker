@@ -18,5 +18,5 @@ func Run() {
 	appRouter := routes.NewAppRouter(app, db)
 	appRouter.CreateRouter()
 
-	log.Fatal(app.Listen(":3001"))
+	log.Fatal(app.Listen(":5000"))
 }
