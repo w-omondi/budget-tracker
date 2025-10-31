@@ -4,11 +4,26 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/w-omondi/budget-tracker.git/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func InitializeDatabase() *gorm.DB {
+type DBManager interface {
+	InitializeDatabase() *gorm.DB
+	EnableUUIDExtension()
+	RunMigration() error
+}
+
+type dbManager struct {
+	db *gorm.DB
+}
+
+func NewDbManager() DBManager {
+	return &dbManager{}
+}
+
+func (dm *dbManager) InitializeDatabase() *gorm.DB {
 	CheckEnvs(
 		"DB_HOST",
 		"DB_USER",
@@ -32,10 +47,30 @@ func InitializeDatabase() *gorm.DB {
 		panic("failed to connect to database")
 	}
 
-	newMigrationManager := NewMigrationManager(db)
-	if err := newMigrationManager.Run(); err != nil {
-		log.Fatal("Migration failed", "error", err)
-	}
+	dm.db = db
 
 	return db
+}
+
+func (dm *dbManager) EnableUUIDExtension() {
+	sql := `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
+	if err := dm.db.Exec(sql).Error; err != nil {
+		log.Fatalf("❌ Failed to enable uuid-ossp extension: %v", err)
+	}
+	log.Println("✅ uuid-ossp extension is active")
+}
+
+func (dm *dbManager) RunMigration() error {
+	models := []any{
+		&models.Expense{},
+		&models.ExpenseCategory{},
+		&models.Revenue{},
+	}
+
+	if err := dm.db.AutoMigrate(models...); err != nil {
+		return err
+	}
+
+	log.Println("Database migration completed successfully")
+	return nil
 }

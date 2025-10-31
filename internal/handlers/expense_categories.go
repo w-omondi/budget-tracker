@@ -49,9 +49,9 @@ func (h *expenseCategoriesHandler) CreateExpenseCategoriesHandler(ctx *fiber.Ctx
 
 func (h *expenseCategoriesHandler) GetExpenseCategoryByIDHandler(ctx *fiber.Ctx) error {
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
@@ -92,9 +92,9 @@ func (h *expenseCategoriesHandler) GetAllExpenseCategoriesHandler(ctx *fiber.Ctx
 func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx) error {
 	log.Println("Updating an expenseCategory")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
@@ -104,7 +104,7 @@ func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	expenseCategory.ID = uint(id)
+	expenseCategory.ID = id
 	if err := h.expenseCategoriesService.UpdateCategory(expenseCategory); err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to update expenseCategory", err)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
@@ -116,14 +116,14 @@ func (h *expenseCategoriesHandler) UpdateExpenseCategoriesHandler(ctx *fiber.Ctx
 
 func (h *expenseCategoriesHandler) DeleteExpenseCategoriesHandler(ctx *fiber.Ctx) error {
 	log.Println("Deleting an expenseCategory")
-	id, err := ctx.ParamsInt("id")
+
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expenseCategory ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	_id := uint(id)
-	if err := h.expenseCategoriesService.DeleteCategory(_id); err != nil {
+	if err := h.expenseCategoriesService.DeleteCategory(id); err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to delete expenseCategory", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}

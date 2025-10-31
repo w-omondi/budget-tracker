@@ -7,9 +7,9 @@ import (
 
 type ExpenseCategoryService interface {
 	CreateCategory(createCategoryDto *models.CreateExpenseCategoryDto) error
-	GetCategoryByID(id int) (*models.ExpenseCategory, error)
+	GetCategoryByID(id models.ID) (*models.ExpenseCategory, error)
 	GetAllCategories(queryOptions *models.QueryOptions) ([]*models.ExpenseCategory, int64, error)
-	DeleteCategory(id uint) error
+	DeleteCategory(id models.ID) error
 	UpdateCategory(category *models.ExpenseCategory) error
 }
 
@@ -31,7 +31,7 @@ func (s *expenseCategoryService) CreateCategory(createCategoryDto *models.Create
 	return s.repo.CreateCategory(expenseCategory)
 }
 
-func (s *expenseCategoryService) GetCategoryByID(id int) (*models.ExpenseCategory, error) {
+func (s *expenseCategoryService) GetCategoryByID(id models.ID) (*models.ExpenseCategory, error) {
 	return s.repo.GetCategoryByID(id)
 }
 
@@ -51,6 +51,6 @@ func (s *expenseCategoryService) UpdateCategory(updateCategoryDto *models.Expens
 	return s.repo.UpdateCategory(expenseCategory)
 }
 
-func (s *expenseCategoryService) DeleteCategory(id uint) error {
+func (s *expenseCategoryService) DeleteCategory(id models.ID) error {
 	return s.repo.DeleteCategory(id)
 }

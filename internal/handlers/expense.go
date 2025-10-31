@@ -51,12 +51,11 @@ func (h *expenseHandler) CreateExpenseHandler(ctx *fiber.Ctx) error {
 func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 	log.Println("Fetching expense by ID")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
 	expense, err := h.expenseService.GetExpenseByID(id)
 	if err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to fetch expense", err)
@@ -68,7 +67,7 @@ func (h *expenseHandler) GetExpenseByIDHandler(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusNotFound).JSON(response)
 	}
 
-	response:= h.responseUtil.SendSingleResponse(expense)
+	response := h.responseUtil.SendSingleResponse(expense)
 	return ctx.JSON(response)
 }
 
@@ -94,12 +93,11 @@ func (h *expenseHandler) GetAllExpensesHandler(ctx *fiber.Ctx) error {
 func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
 	log.Println("Updating an expense")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
 	expense := new(models.CreateExpenseDto)
 	if err := utils.ParseAndValidateData(ctx, expense); err != nil {
 		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
@@ -118,12 +116,11 @@ func (h *expenseHandler) UpdateExpenseHandler(ctx *fiber.Ctx) error {
 func (h *expenseHandler) DeleteExpenseHandler(ctx *fiber.Ctx) error {
 	log.Println("Deleting an expense")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid expense ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
 	if err := h.expenseService.DeleteExpense(id); err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to delete expense", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)

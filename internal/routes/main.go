@@ -31,6 +31,9 @@ func (r *appRouter) CreateRouter() {
 
 	api := r.app.Group("/api/v1")
 
+	dashboardRoutes := api.Group("/dashboard")
+	DashboardRoutes(dashboardRoutes, db)
+
 	revenueRoutes := api.Group("/revenue-sources")
 	RevenueRoutes(revenueRoutes, db)
 

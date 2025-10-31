@@ -50,13 +50,12 @@ func (h *revenueHandler) CreateRevenueHandler(ctx *fiber.Ctx) error {
 func (h *revenueHandler) GetRevenueByIDHandler(ctx *fiber.Ctx) error {
 	log.Println("Fetching revenue by ID")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid revenue ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
-	revenue, err := h.revenueService.GetRevenueByID(uint(id))
+	revenue, err := h.revenueService.GetRevenueByID(id)
 	if err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to fetch revenue", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
@@ -93,19 +92,18 @@ func (h *revenueHandler) GetAllRevenuesHandler(ctx *fiber.Ctx) error {
 func (h *revenueHandler) UpdateRevenueHandler(ctx *fiber.Ctx) error {
 	log.Println("Updating an revenue")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid revenue ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
 	revenue := new(models.CreateRevenueDto)
 	if err := utils.ParseAndValidateData(ctx, revenue); err != nil {
 		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
 
-	if err := h.revenueService.UpdateRevenue(uint(id), revenue); err != nil {
+	if err := h.revenueService.UpdateRevenue(id, revenue); err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to update revenue", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
@@ -117,13 +115,12 @@ func (h *revenueHandler) UpdateRevenueHandler(ctx *fiber.Ctx) error {
 func (h *revenueHandler) DeleteRevenueHandler(ctx *fiber.Ctx) error {
 	log.Println("Deleting an revenue")
 
-	id, err := ctx.ParamsInt("id")
+	id, err := utils.ParseIDParam(ctx)
 	if err != nil {
-		response := h.responseUtil.SendErrorResponse("Invalid revenue ID", err)
+		response := h.responseUtil.SendErrorResponse(err.Error(), nil)
 		return ctx.Status(fiber.StatusBadRequest).JSON(response)
 	}
-
-	if err := h.revenueService.DeleteRevenue(uint(id)); err != nil {
+	if err := h.revenueService.DeleteRevenue(id); err != nil {
 		response := h.responseUtil.SendErrorResponse("Failed to delete revenue", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(response)
 	}
@@ -131,4 +128,3 @@ func (h *revenueHandler) DeleteRevenueHandler(ctx *fiber.Ctx) error {
 	response := h.responseUtil.SendNoContedResponse()
 	return ctx.JSON(response)
 }
-

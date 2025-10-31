@@ -10,7 +10,10 @@ import (
 )
 
 func Run() {
-	db := configs.InitializeDatabase()
+	dbManager := configs.NewDbManager()
+	db := dbManager.InitializeDatabase()
+	dbManager.EnableUUIDExtension()
+	dbManager.RunMigration()
 
 	app := fiber.New()
 	middlewares.SetupCors(app)

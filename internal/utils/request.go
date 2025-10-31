@@ -1,18 +1,24 @@
 package utils
 
 import (
-	"fmt"
-	"strconv"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/w-omondi/budget-tracker.git/internal/models"
 )
 
-func ParseIDParam(ctx *fiber.Ctx) (int, error) {
-	id, err := strconv.Atoi(ctx.Params("id"))
-	if err != nil || id <= 0 {
-		return 0, fmt.Errorf("invalid ID parameter")
+func ParseIDParam(c *fiber.Ctx) (uuid.UUID, error) {
+	idParam := c.Params("id")
+	if idParam == "" {
+		return uuid.Nil, errors.New("missing ID parameter")
 	}
+
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		return uuid.Nil, errors.New("invalid UUID format")
+	}
+
 	return id, nil
 }
 

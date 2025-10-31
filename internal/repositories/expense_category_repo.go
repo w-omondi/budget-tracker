@@ -7,10 +7,10 @@ import (
 
 type ExpenseCategoryRepository interface {
 	CreateCategory(category *models.ExpenseCategory) error
-	GetCategoryByID(id int) (*models.ExpenseCategory, error)
+	GetCategoryByID(id models.ID) (*models.ExpenseCategory, error)
 	GetAllCategories(page, pageSize int) ([]*models.ExpenseCategory, int64, error)
 	UpdateCategory(category *models.ExpenseCategory) error
-	DeleteCategory(id uint) error
+	DeleteCategory(id models.ID) error
 }
 
 type expenseCategoryRepository struct {
@@ -25,7 +25,7 @@ func (r *expenseCategoryRepository) CreateCategory(category *models.ExpenseCateg
 	return r.db.Create(category).Error
 }
 
-func (r *expenseCategoryRepository) GetCategoryByID(id int) (*models.ExpenseCategory, error) {
+func (r *expenseCategoryRepository) GetCategoryByID(id models.ID) (*models.ExpenseCategory, error) {
 	var category models.ExpenseCategory
 	if err := r.db.First(&category, id).Error; err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (r *expenseCategoryRepository) UpdateCategory(category *models.ExpenseCateg
 	return r.db.Model(&models.ExpenseCategory{}).Where("id=?", category.ID).Updates(category).Error
 }
 
-func (r *expenseCategoryRepository) DeleteCategory(id uint) error {
+func (r *expenseCategoryRepository) DeleteCategory(id models.ID) error {
 	category := &models.ExpenseCategory{
 		ID: id,
 	}

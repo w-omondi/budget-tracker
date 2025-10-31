@@ -7,10 +7,10 @@ import (
 
 type RevenueRepository interface {
 	CreateRevenue(revenue *models.Revenue) error
-	GetRevenueByID(id uint) (*models.Revenue, error)
+	GetRevenueByID(id models.ID) (*models.Revenue, error)
 	GetPaginatedRevenues(page, pageSize int) ([]*models.Revenue, int64, error)
 	UpdateRevenue(revenue *models.Revenue) error
-	DeleteRevenue(id uint) error
+	DeleteRevenue(id models.ID) error
 }
 
 type revenueRepository struct {
@@ -25,7 +25,7 @@ func (r *revenueRepository) CreateRevenue(revenue *models.Revenue) error {
 	return r.db.Create(revenue).Error
 }
 
-func (r *revenueRepository) GetRevenueByID(id uint) (*models.Revenue, error) {
+func (r *revenueRepository) GetRevenueByID(id models.ID) (*models.Revenue, error) {
 	var revenue models.Revenue
 	if err := r.db.First(&revenue, id).Error; err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (r *revenueRepository) UpdateRevenue(revenue *models.Revenue) error {
 	return r.db.Model(&models.Revenue{}).Where("id=?", revenue.ID).Updates(revenue).Error
 }
 
-func (r *revenueRepository) DeleteRevenue(id uint) error {
+func (r *revenueRepository) DeleteRevenue(id models.ID) error {
 	var revenue models.Revenue
 	if err := r.db.First(&revenue, id).Error; err != nil {
 		return err

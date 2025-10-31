@@ -7,10 +7,10 @@ import (
 
 type ExpenseService interface {
 	CreateExpense(createExpenseDto *models.CreateExpenseDto) error
-	GetExpenseByID(id int) (*models.Expense, error)
+	GetExpenseByID(id models.ID) (*models.Expense, error)
 	GetAllExpenses(queryOptions *models.QueryOptions) ([]*models.Expense, int64, error)
-	UpdateExpense(id int, expenseDto *models.CreateExpenseDto) error
-	DeleteExpense(id int) error
+	UpdateExpense(id models.ID, expenseDto *models.CreateExpenseDto) error
+	DeleteExpense(id models.ID) error
 }
 
 type expenseService struct {
@@ -29,11 +29,12 @@ func (e *expenseService) CreateExpense(createExpenseDto *models.CreateExpenseDto
 		Amount:      createExpenseDto.Amount,
 		Description: createExpenseDto.Description,
 		CategoryID:  createExpenseDto.CategoryId,
+		Priority:    createExpenseDto.Priority,
 	}
 	return e.repo.CreateExpense(expense)
 }
 
-func (e *expenseService) GetExpenseByID(id int) (*models.Expense, error) {
+func (e *expenseService) GetExpenseByID(id models.ID) (*models.Expense, error) {
 	return e.repo.GetExpenseByID(id)
 }
 
@@ -41,16 +42,17 @@ func (e *expenseService) GetAllExpenses(queryOptions *models.QueryOptions) ([]*m
 	return e.repo.GetPaginatedExpenses(queryOptions.Page, queryOptions.PageSize)
 }
 
-func (e *expenseService) UpdateExpense(id int, expenseDto *models.CreateExpenseDto) error {
+func (e *expenseService) UpdateExpense(id models.ID, expenseDto *models.CreateExpenseDto) error {
 	expense := &models.Expense{
-		ID:          uint(id),
+		ID:          id,
 		Amount:      expenseDto.Amount,
 		Description: expenseDto.Description,
 		CategoryID:  expenseDto.CategoryId,
+		Priority:    expenseDto.Priority,
 	}
 	return e.repo.UpdateExpense(expense)
 }
 
-func (e *expenseService) DeleteExpense(id int) error {
+func (e *expenseService) DeleteExpense(id models.ID) error {
 	return e.repo.DeleteExpense(id)
 }

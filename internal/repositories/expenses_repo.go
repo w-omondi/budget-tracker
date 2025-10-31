@@ -7,11 +7,11 @@ import (
 
 type ExpenseRepository interface {
 	CreateExpense(expense *models.Expense) error
-	GetExpenseByID(id int) (*models.Expense, error)
+	GetExpenseByID(id models.ID) (*models.Expense, error)
 	GetAllExpenses() ([]models.Expense, error)
 	GetPaginatedExpenses(page, pageSize int) ([]*models.Expense, int64, error)
 	UpdateExpense(expense *models.Expense) error
-	DeleteExpense(id int) error
+	DeleteExpense(id models.ID) error
 }
 
 type expenseRepository struct {
@@ -26,7 +26,7 @@ func (r *expenseRepository) CreateExpense(expense *models.Expense) error {
 	return r.db.Create(expense).Error
 }
 
-func (r *expenseRepository) GetExpenseByID(id int) (*models.Expense, error) {
+func (r *expenseRepository) GetExpenseByID(id models.ID) (*models.Expense, error) {
 	var expense models.Expense
 	if err := r.db.First(&expense, id).Error; err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (r *expenseRepository) UpdateExpense(expense *models.Expense) error {
 	return r.db.Model(&models.Expense{}).Where("id=?", expense.ID).Updates(expense).Error
 }
 
-func (r *expenseRepository) DeleteExpense(id int) error {
+func (r *expenseRepository) DeleteExpense(id models.ID) error {
 	var expense models.Expense
 	if err := r.db.First(&expense, id).Error; err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 
 type ApiResponse[T any] interface {
 	SendNoContedResponse() *models.NoContentResponse
-	SendSingleResponse(data any) *models.NormalResponse
+	SendSingleResponse(data T) *models.NormalResponse
 	SendPaginatedResponse(page, pageSize, totalItems int, items []T) *models.PaginatedResponse[T]
 	SendErrorResponse(message string, err error) *models.ErrorResponse
 }
@@ -26,7 +26,7 @@ func (r *apiResponse[T]) SendNoContedResponse() *models.NoContentResponse {
 	}
 }
 
-func (r *apiResponse[T]) SendSingleResponse(data any) *models.NormalResponse {
+func (r *apiResponse[T]) SendSingleResponse(data T) *models.NormalResponse {
 	return &models.NormalResponse{
 		Success: true,
 		Message: "Data retrieved successfully",
