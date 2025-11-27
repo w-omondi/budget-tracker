@@ -3,4 +3,6 @@ init-scripts
 docker-compose.yml
 tmp
 cmd/tmp
+service.json
+
 
