@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/w-omondi/budget-tracker.git/internal/handlers"
+	"github.com/w-omondi/budget-tracker.git/internal/middlewares"
 	"github.com/w-omondi/budget-tracker.git/internal/repositories"
 	"github.com/w-omondi/budget-tracker.git/internal/services"
 	"gorm.io/gorm"
@@ -23,5 +24,5 @@ func DashboardRoutes(route fiber.Router, db *gorm.DB) {
 		categoryService,
 	)
 
-	route.Get("/", dashboardHandler.GetDashbordSummary)
+	route.Get("/", middlewares.AuthenticateUser(), dashboardHandler.GetDashbordSummary)
 }
