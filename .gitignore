@@ -4,5 +4,7 @@ docker-compose.yml
 tmp
 cmd/tmp
 service.json
+main.exe
+
 
 
