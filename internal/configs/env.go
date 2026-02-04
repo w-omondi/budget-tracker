@@ -8,11 +8,12 @@ import (
 )
 
 func LoadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	log.Println("Environment variables loaded successfully")
+    if err := godotenv.Load(); err != nil {
+        // Not fatal in production. Use environment variables from runtime instead.
+        log.Println("No .env loaded (this is okay in production)")
+    } else {
+        log.Println("Environment variables loaded from .env")
+    }
 }
 
 func CheckEnvs(variables ...string) {
